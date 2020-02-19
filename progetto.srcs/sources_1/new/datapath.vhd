@@ -35,7 +35,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity datapath is
     Port ( 
         i_clk : in STD_LOGIC;
-        i_res : in STD_LOGIC;
+        i_rst : in STD_LOGIC;
         i_data : in std_logic_vector (7 downto 0);
         o_address : out std_logic_vector (15 downto 0);
         o_data : out std_logic_vector (7 downto 0);
@@ -43,7 +43,6 @@ entity datapath is
         r0_load : in STD_LOGIC;
         r1_load : in STD_LOGIC;
         r2_load : in STD_LOGIC;
-        w_addr : in std_logic_vector (7 downto 0);
         sel_addr : in STD_LOGIC;
         l_mask : in std_logic_vector(3 downto 0));
 end datapath;
@@ -61,11 +60,11 @@ signal lt_sub_100 : std_logic; --
 
 begin
     -- reg_mem
-    process(i_clk, i_res)
+    process(i_clk, i_rst)
     begin
-        if(i_res = '1') then
+        if(i_rst = '1') then
             o_r_mem <= "00000000";
-        elsif i_clk'event and i_clk = '1' then
+        elsif rising_edge(i_clk) then
             if(r_mem_load = '1') then
                 o_r_mem <= i_data;
             end if;
@@ -73,33 +72,33 @@ begin
     end process;
     
     --r0
-    process(i_clk, i_res)
+    process(i_clk, i_rst)
     begin
-        if(i_res = '1') then
+        if(i_rst = '1') then
             o_r0 <= '0';
-        elsif i_clk'event and i_clk = '1' then
+        elsif falling_edge(i_clk) then
             if(r0_load = '1') then
                 o_r0 <= lt_ram_mem;
             end if;
         end if;
     end process;
     --r1
-    process(i_clk, i_res)
+    process(i_clk, i_rst)
     begin
-        if(i_res = '1') then
+        if(i_rst = '1') then
             o_r1 <= '0';
-        elsif i_clk'event and i_clk = '1' then
+        elsif falling_edge(i_clk) then
             if(r1_load = '1') then
                 o_r1 <= lt_ram_mem;
             end if;
         end if;
     end process;
     --r2
-    process(i_clk, i_res)
+    process(i_clk, i_rst)
     begin
-        if(i_res = '1') then
+        if(i_rst = '1') then
             o_r2 <= '0';
-        elsif i_clk'event and i_clk = '1' then
+        elsif falling_edge(i_clk) then
             if(r2_load = '1') then
                 o_r2 <= lt_ram_mem;
             end if;
@@ -117,10 +116,10 @@ begin
     
     -- one_hot_diff
     with sub_ram_mem select
-        one_hot_diff <=  "0001" when "0000",
-                        "0010" when "0001",
-                        "0100" when "0010",
-                        "1000" when "0011",
+        one_hot_diff <=  "0001" when "00000000",
+                        "0010" when "00000001",
+                        "0100" when "00000010",
+                        "1000" when "00000011",
                         "XXXX" when others;
                         
     -- lt_sub_100
@@ -128,13 +127,13 @@ begin
     
     -- o_address
     with sel_addr select
-        o_address <=    "000000000000" & w_addr when '1', -- TODO can probably be turned into a constant
+        o_address <=    "0000000000001001" when '1', -- TODO can probably be turned into a constant
                         "000000000000" & (cat_regs or l_mask) when '0',
                         "XXXXXXXXXXXXXXXX" when others;
     
     --o_data
     with (lt_sub_100 and lt_ram_mem) select
-        o_data <=   ("1000" and cat_regs) & one_hot_diff when '1',
+        o_data <=   ("1000" or cat_regs) & one_hot_diff when '1',
                     o_r_mem when '0',
                     "XXXXXXXX" when others;
 
