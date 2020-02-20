@@ -106,7 +106,7 @@ begin
     end process;
     
     -- lt_ram_mem
-    lt_ram_mem <= '1' when (i_data < o_r_mem) else '0';
+    lt_ram_mem <= '1' when (i_data <= o_r_mem) else '0';
     
     -- sub_ram_mem
     sub_ram_mem <= o_r_mem(7 downto 0) - i_data (7 downto 0);

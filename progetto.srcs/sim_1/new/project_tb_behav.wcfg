@@ -10,13 +10,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="393792fs"></ZoomStartTime>
-      <ZoomEndTime time="1143751fs"></ZoomEndTime>
-      <Cursor1Time time="850000fs"></Cursor1Time>
+      <ZoomStartTime time="77794fs"></ZoomStartTime>
+      <ZoomEndTime time="85125fs"></ZoomEndTime>
+      <Cursor1Time time="79684fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="142"></ValueColumnWidth>
+      <ValueColumnWidth column_width="138"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="31" />
    <wvobject fp_name="/project_tb/tb_clk" type="logic">
@@ -39,7 +39,7 @@
    <wvobject fp_name="/project_tb/mem_i_data" type="array">
       <obj_property name="ElementShortName">mem_i_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">mem_i_data[7:0]</obj_property>
-      <obj_property name="isExpanded"></obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/project_tb/mem_o_data" type="array">
       <obj_property name="ElementShortName">mem_o_data[7:0]</obj_property>
