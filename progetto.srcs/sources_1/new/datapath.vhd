@@ -37,104 +37,142 @@ entity datapath is
         i_clk : in STD_LOGIC;
         i_rst : in STD_LOGIC;
         i_data : in std_logic_vector (7 downto 0);
-        o_address : out std_logic_vector (15 downto 0);
         o_data : out std_logic_vector (7 downto 0);
-        r_mem_load : in STD_LOGIC;
-        r0_load : in STD_LOGIC;
-        r1_load : in STD_LOGIC;
-        r2_load : in STD_LOGIC;
-        sel_addr : in STD_LOGIC;
-        l_mask : in std_logic_vector(3 downto 0));
+        o_address : out std_logic_vector (15 downto 0);
+        o_enc_rdy : out std_logic;
+        i_count_en : in std_logic;
+        i_addr : in std_logic_vector (3 downto 0);
+        i_sel_counter : in std_logic);
 end datapath;
 
 architecture Behavioral of datapath is
-signal o_r_mem : std_logic_vector(7 downto 0); --
-signal o_r0 : std_logic; --
-signal o_r1 : std_logic; --
-signal o_r2 : std_logic; --
-signal lt_ram_mem : std_logic; --
-signal sub_ram_mem : std_logic_vector(7 downto 0); --
-signal cat_regs : std_logic_vector(3 downto 0); --
-signal one_hot_diff : std_logic_vector(3 downto 0); --
-signal lt_sub_100 : std_logic; --
+component wz_enc is 
+    Port ( i_addr : in STD_LOGIC_VECTOR (7 downto 0);
+           i_load_wz : in STD_LOGIC;
+           o_hit : out STD_LOGIC;
+           o_diff : out STD_LOGIC_VECTOR (3 downto 0);
+           i_clk : in STD_LOGIC);
+end component;
+
+component counter is
+    Port ( i_en : in STD_LOGIC;
+           i_clk : in STD_LOGIC;
+           i_rst : in STD_LOGIC;
+           o_base2 : out STD_LOGIC_VECTOR (2 downto 0);
+           o_one_hot : out STD_LOGIC_VECTOR (7 downto 0);
+           o_done : out STD_LOGIC);
+end component;
+
+signal os0, os1, os2, os3, os4, os5, os6, os7 : std_logic_vector (3 downto 0);
+signal offs_and : std_logic_vector (3 downto 0);
+signal offs_one_hot : std_logic_vector (3 downto 0);
+signal wz_hit_one_hot : std_logic_vector (7 downto 0);
+signal wz_hit_base_2 : std_logic_vector (2 downto 0);
+signal enc_addr : std_logic_vector (7 downto 0);
+
+signal counter_one_hot : std_logic_vector (7 downto 0);
+signal counter_base_2 : std_logic_vector (2 downto 0);
 
 begin
-    -- reg_mem
-    process(i_clk, i_rst)
-    begin
-        if(i_rst = '1') then
-            o_r_mem <= "00000000";
-        elsif rising_edge(i_clk) then
-            if(r_mem_load = '1') then
-                o_r_mem <= i_data;
-            end if;
-        end if;
-    end process;
+    CNT: counter port map (
+        i_en => i_count_en,
+        i_clk => i_clk,
+        i_rst => i_rst,
+        o_base2 => counter_base_2,
+        o_one_hot => counter_one_hot,
+        o_done => o_enc_rdy
+    );
+    -- TODO Replace with `for I in 7 downto 0 generate`
+    WZ0: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(0),
+        o_hit => wz_hit_one_hot(0),
+        o_diff => os0,
+        i_clk => i_clk
+    );
+    WZ1: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(1),
+        o_hit => wz_hit_one_hot(1),
+        o_diff => os1,
+        i_clk => i_clk
+    );
+    WZ2: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(2),
+        o_hit => wz_hit_one_hot(2),
+        o_diff => os2,
+        i_clk => i_clk
+    );
+    WZ3: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(3),
+        o_hit => wz_hit_one_hot(3),
+        o_diff => os3,
+        i_clk => i_clk
+    );
+    WZ4: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(4),
+        o_hit => wz_hit_one_hot(4),
+        o_diff => os4,
+        i_clk => i_clk
+    );
+    WZ5: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(5),
+        o_hit => wz_hit_one_hot(5),
+        o_diff => os5,
+        i_clk => i_clk
+    );
+    WZ6: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(6),
+        o_hit => wz_hit_one_hot(6),
+        o_diff => os6,
+        i_clk => i_clk
+    );
+    WZ7: wz_enc port map (
+        i_addr => i_data,
+        i_load_wz => counter_one_hot(7),
+        o_hit => wz_hit_one_hot(7),
+        o_diff => os7,
+        i_clk => i_clk
+    );
     
-    --r0
-    process(i_clk, i_rst)
-    begin
-        if(i_rst = '1') then
-            o_r0 <= '0';
-        elsif falling_edge(i_clk) then
-            if(r0_load = '1') then
-                o_r0 <= lt_ram_mem;
-            end if;
-        end if;
-    end process;
-    --r1
-    process(i_clk, i_rst)
-    begin
-        if(i_rst = '1') then
-            o_r1 <= '0';
-        elsif falling_edge(i_clk) then
-            if(r1_load = '1') then
-                o_r1 <= lt_ram_mem;
-            end if;
-        end if;
-    end process;
-    --r2
-    process(i_clk, i_rst)
-    begin
-        if(i_rst = '1') then
-            o_r2 <= '0';
-        elsif falling_edge(i_clk) then
-            if(r2_load = '1') then
-                o_r2 <= lt_ram_mem;
-            end if;
-        end if;
-    end process;
+    --offs_and
+    offs_and <= (os0 and os1 and os2 and os3 and os4 and os5 and os6 and os7);
     
-    -- lt_ram_mem
-    lt_ram_mem <= '1' when (i_data <= o_r_mem) else '0';
-    
-    -- sub_ram_mem
-    sub_ram_mem <= o_r_mem(7 downto 0) - i_data (7 downto 0);
-    
-    -- cat__regs
-    cat_regs <= '0' & o_r0 & o_r1 & o_r2;
-    
-    -- one_hot_diff
-    with sub_ram_mem select
-        one_hot_diff <=  "0001" when "00000000",
-                        "0010" when "00000001",
-                        "0100" when "00000010",
-                        "1000" when "00000011",
+    --offs_one_hot
+    with offs_and select
+        offs_one_hot <= "0001" when "0000",
+                        "0010" when "0001",
+                        "0100" when "0010",
+                        "1000" when "0011",
                         "XXXX" when others;
-                        
-    -- lt_sub_100
-    lt_sub_100 <= '1' when (sub_ram_mem < "0100") else '0';
     
-    -- o_address
-    with sel_addr select
-        o_address <=    "0000000000001001" when '1', -- TODO can probably be turned into a constant
-                        "000000000000" & (cat_regs or l_mask) when '0',
-                        "XXXXXXXXXXXXXXXX" when others;
+    --wz_hot_base_2
+    with wz_hit_one_hot select
+        wz_hit_base_2 <=    "000" when "00000001",
+                            "001" when "00000010",
+                            "010" when "00000100",
+                            "011" when "00001000",
+                            "100" when "00010000",
+                            "101" when "00100000",
+                            "110" when "01000000",
+                            "111" when "10000000",
+                            "XXX" when others;
+    --enc_addr
+    enc_addr <= '1' & wz_hit_base_2 & offs_one_hot;
     
     --o_data
-    with (lt_sub_100 and lt_ram_mem) select
-        o_data <=   ("1000" or cat_regs) & one_hot_diff when '1',
-                    o_r_mem when '0',
-                    "XXXXXXXX" when others;
-
+    with wz_hit_one_hot select
+        o_data <=   i_data when "00000000",
+                    enc_addr when others;
+    
+    --o_address
+    with i_sel_counter select
+        o_address <=    "0000000000000" & counter_base_2 when '1',
+                        "000000000000" & i_addr when '0',
+                        "XXXXXXXXXXXXXXXX" when others;
 end Behavioral;

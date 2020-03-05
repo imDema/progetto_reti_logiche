@@ -45,50 +45,43 @@ end project_reti_logiche;
 
 architecture Behavioral of project_reti_logiche is
 component datapath is 
-    Port (
+    Port ( 
         i_clk : in STD_LOGIC;
         i_rst : in STD_LOGIC;
         i_data : in std_logic_vector (7 downto 0);
-        o_address : out std_logic_vector (15 downto 0);
         o_data : out std_logic_vector (7 downto 0);
-        r_mem_load : in STD_LOGIC;
-        r0_load : in STD_LOGIC;
-        r1_load : in STD_LOGIC;
-        r2_load : in STD_LOGIC;
-        sel_addr : in STD_LOGIC;
-        l_mask : in std_logic_vector(3 downto 0)
-    );
+        o_address : out std_logic_vector (15 downto 0);
+        o_enc_rdy : out std_logic;
+        i_count_en : in std_logic;
+        i_addr : in std_logic_vector (3 downto 0);
+        i_sel_counter : in std_logic);
 end component;
 
-signal r_mem_load : STD_LOGIC;
-signal r0_load : STD_LOGIC;
-signal r1_load : STD_LOGIC;
-signal r2_load : STD_LOGIC;
-signal sel_addr : STD_LOGIC;
-signal l_mask : std_logic_vector (3 downto 0);
+signal count_en : STD_LOGIC;
+signal addr : std_logic_vector (3 downto 0);
+signal sel_counter : STD_LOGIC;
+signal enc_rdy : std_logic;
 
-type S is (S0,S1,S2,S3,S4);
+type S is (S0,S1,S2,S3,S4,S5);
 signal cur_state, next_state : S;
 begin
     DATAPATH0: datapath port map (
         i_clk => i_clk,
         i_rst => i_rst,
         i_data => i_data,
-        o_address => o_address,
         o_data => o_data,
-        r_mem_load => r_mem_load,
-        r0_load => r0_load,
-        r1_load => r1_load,
-        r2_load => r2_load,
-        sel_addr => sel_addr,
-        l_mask => l_mask
+        o_address => o_address,
+        o_enc_rdy => enc_rdy,
+        i_count_en => count_en,
+        i_addr => addr,
+        i_sel_counter => sel_counter
     );
     
     process(i_clk, i_rst)
     begin
         if(i_rst = '1') then
             cur_state <= S0;
-        elsif i_clk'event and i_clk = '1' then
+        elsif rising_edge(i_clk) then
             cur_state <= next_state;
         end if;
     end process;
@@ -102,52 +95,50 @@ begin
                     next_state <= S1;
                 end if;
             when S1 =>
-                next_state <= S2;
+                if enc_rdy = '1' then
+                    next_state <= S2;
+                end if;
             when S2 =>
                 next_state <= S3;
             when S3 =>
                 next_state <= S4;
             when S4 =>
-               --  next_state <= S5;
-            -- when S5 =>
-                next_state <= S0;
+               if i_start = '1' then
+                    next_state <= S2;
+                else
+                    next_state <= S5;
+                end if;
+            when S5 =>
+                if i_start = '1' then
+                    next_state <= S2;
+                end if;
         end case;
     end process;
 
     process(cur_state) -- State values
     begin
-        r_mem_load <= '0';
-        r0_load <= '0';
-        r1_load <= '0';
-        r2_load <= '0';
-        sel_addr <= '0';
-        l_mask  <= "0000";
         o_en <= '0';
         o_we <= '0';
         o_done <= '0';
+        count_en <= '0';
+        sel_counter <= '0';
+        addr <= "0000";
         case cur_state is -- TODO : handle o_en
             when S0 =>
-                l_mask <= "1000";
-                r_mem_load <= '1';
-                o_en <= '1';
             when S1 =>
-                l_mask <= "0100";
+                count_en <= '1';
                 o_en <= '1';
+                sel_counter <= '1';
             when S2 =>
-                l_mask <= "0010";
-                r0_load <= '1';
+                addr <= "1000";
                 o_en <= '1';
             when S3 =>
-                l_mask <= "0001";
-                r1_load <= '1';
-                o_en <= '1';
-            when S4 =>
-                r2_load <= '1';
-            -- when S5 =>
-                sel_addr <= '1';
+                addr <= "1001";
                 o_en <= '1';
                 o_we <= '1';
+            when S4 =>
                 o_done <= '1';
+            when S5 =>
         end case;
     
         end process;
