@@ -61,6 +61,9 @@ signal count_en : STD_LOGIC;
 signal addr : std_logic_vector (3 downto 0);
 signal sel_counter : STD_LOGIC;
 signal enc_rdy : std_logic;
+signal i_r_cache : std_logic_vector(7 downto 0); -- TODO check if removable
+signal o_r_cache : std_logic_vector(7 downto 0); -- TODO check if removable
+signal r_cache_load : std_logic;
 
 type S is (S0,S1,S2,S3,S4,S5);
 signal cur_state, next_state : S;
@@ -69,13 +72,24 @@ begin
         i_clk => i_clk,
         i_rst => i_rst,
         i_data => i_data,
-        o_data => o_data,
+        o_data => i_r_cache,
         o_address => o_address,
         o_enc_rdy => enc_rdy,
         i_count_en => count_en,
         i_addr => addr,
         i_sel_counter => sel_counter
     );
+    
+    R_CACHE: process(i_clk) -- R_CACHE
+    begin
+        if falling_edge(i_clk) then
+            if(r_cache_load = '1') then
+                o_r_cache <= i_r_cache;
+            end if;
+        end if;
+    end process;
+    
+    o_data <= o_r_cache;
     
     process(i_clk, i_rst)
     begin
@@ -86,7 +100,7 @@ begin
         end if;
     end process;
     
-    process(cur_state, i_start)
+    process(cur_state, i_start, enc_rdy)
     begin
         next_state <= cur_state;
         case cur_state is
@@ -123,6 +137,7 @@ begin
         count_en <= '0';
         sel_counter <= '0';
         addr <= "0000";
+        r_cache_load <= '0';
         case cur_state is -- TODO : handle o_en
             when S0 =>
             when S1 =>
@@ -132,6 +147,7 @@ begin
             when S2 =>
                 addr <= "1000";
                 o_en <= '1';
+                r_cache_load <= '1';
             when S3 =>
                 addr <= "1001";
                 o_en <= '1';

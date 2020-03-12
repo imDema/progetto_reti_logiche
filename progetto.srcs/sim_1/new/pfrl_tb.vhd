@@ -12,7 +12,7 @@ signal   tb_done		: std_logic;
 signal   mem_address		: std_logic_vector (15 downto 0) := (others => '0');
 signal   tb_rst	                : std_logic := '0';
 signal   tb_start		: std_logic := '0';
-signal   tb_clk		        : std_logic := '0';
+signal   tb_clk		        : std_logic := '1';
 signal   mem_o_data,mem_i_data	: std_logic_vector (7 downto 0);
 signal   enable_wire  		: std_logic;
 signal   mem_we		        : std_logic;
@@ -28,7 +28,7 @@ signal RAM: ram_type := (0 => std_logic_vector(to_unsigned( 4 , 8)),
                          5 => std_logic_vector(to_unsigned( 45 , 8)),
                          6 => std_logic_vector(to_unsigned( 77 , 8)),
                          7 => std_logic_vector(to_unsigned( 91 , 8)),
-                         8 => std_logic_vector(to_unsigned( 90 , 8)),
+                         8 => std_logic_vector(to_unsigned( 33 , 8)),
 			 others => (others =>'0'));
 
 component project_reti_logiche is
@@ -97,8 +97,8 @@ begin
     tb_start <= '0';
     wait until tb_done = '0';
 
-    -- Maschera di output = 1 - 111 - 0001
-    assert RAM(9) = std_logic_vector(to_unsigned( 90 , 8)) report "TEST FALLITO. Expected  90  found " & integer'image(to_integer(unsigned(RAM(9))))  severity failure;
+    -- Maschera di output = 1 - 011 - 0100
+    assert RAM(9) = std_logic_vector(to_unsigned( 180 , 8)) report "TEST FALLITO. Expected  180  found " & integer'image(to_integer(unsigned(RAM(9))))  severity failure;
  
     assert false report "Simulation Ended!, TEST PASSATO" severity failure;
 end process test;

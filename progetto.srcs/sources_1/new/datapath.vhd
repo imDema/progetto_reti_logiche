@@ -50,7 +50,7 @@ component wz_enc is
     Port ( i_addr : in STD_LOGIC_VECTOR (7 downto 0);
            i_load_wz : in STD_LOGIC;
            o_hit : out STD_LOGIC;
-           o_diff : out STD_LOGIC_VECTOR (3 downto 0);
+           o_diff : out STD_LOGIC_VECTOR (1 downto 0);
            i_clk : in STD_LOGIC);
 end component;
 
@@ -63,8 +63,9 @@ component counter is
            o_done : out STD_LOGIC);
 end component;
 
-signal os0, os1, os2, os3, os4, os5, os6, os7 : std_logic_vector (3 downto 0);
-signal offs_and : std_logic_vector (3 downto 0);
+TYPE offs_type is array (0 to 7) of std_logic_vector (1 downto 0);
+signal offs : offs_type;
+signal offs_or : std_logic_vector (1 downto 0);
 signal offs_one_hot : std_logic_vector (3 downto 0);
 signal wz_hit_one_hot : std_logic_vector (7 downto 0);
 signal wz_hit_base_2 : std_logic_vector (2 downto 0);
@@ -83,72 +84,25 @@ begin
         o_done => o_enc_rdy
     );
     -- TODO Replace with `for I in 7 downto 0 generate`
-    WZ0: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(0),
-        o_hit => wz_hit_one_hot(0),
-        o_diff => os0,
-        i_clk => i_clk
-    );
-    WZ1: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(1),
-        o_hit => wz_hit_one_hot(1),
-        o_diff => os1,
-        i_clk => i_clk
-    );
-    WZ2: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(2),
-        o_hit => wz_hit_one_hot(2),
-        o_diff => os2,
-        i_clk => i_clk
-    );
-    WZ3: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(3),
-        o_hit => wz_hit_one_hot(3),
-        o_diff => os3,
-        i_clk => i_clk
-    );
-    WZ4: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(4),
-        o_hit => wz_hit_one_hot(4),
-        o_diff => os4,
-        i_clk => i_clk
-    );
-    WZ5: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(5),
-        o_hit => wz_hit_one_hot(5),
-        o_diff => os5,
-        i_clk => i_clk
-    );
-    WZ6: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(6),
-        o_hit => wz_hit_one_hot(6),
-        o_diff => os6,
-        i_clk => i_clk
-    );
-    WZ7: wz_enc port map (
-        i_addr => i_data,
-        i_load_wz => counter_one_hot(7),
-        o_hit => wz_hit_one_hot(7),
-        o_diff => os7,
-        i_clk => i_clk
-    );
+    GEN_WZ: for I in 0 to 7 generate
+        WZX: wz_enc port map (
+            i_addr => i_data,
+            i_load_wz => counter_one_hot(I),
+            o_hit => wz_hit_one_hot(I),
+            o_diff => offs(I),
+            i_clk => i_clk
+        );
+    end generate;
     
     --offs_and
-    offs_and <= (os0 and os1 and os2 and os3 and os4 and os5 and os6 and os7);
+    offs_or <= (offs(0) or offs(1) or offs(2) or offs(3) or offs(4) or offs(5) or offs(6) or offs(7));
     
     --offs_one_hot
-    with offs_and select
-        offs_one_hot <= "0001" when "0000",
-                        "0010" when "0001",
-                        "0100" when "0010",
-                        "1000" when "0011",
+    with offs_or select
+        offs_one_hot <= "0001" when "00",
+                        "0010" when "01",
+                        "0100" when "10",
+                        "1000" when "11",
                         "XXXX" when others;
     
     --wz_hot_base_2

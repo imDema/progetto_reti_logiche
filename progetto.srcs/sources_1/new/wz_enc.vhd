@@ -36,7 +36,7 @@ entity wz_enc is
     Port ( i_addr : in STD_LOGIC_VECTOR (7 downto 0);
            i_load_wz : in STD_LOGIC;
            o_hit : out STD_LOGIC;
-           o_diff : out STD_LOGIC_VECTOR (3 downto 0);
+           o_diff : out STD_LOGIC_VECTOR (1 downto 0);
            i_clk : in STD_LOGIC);
 end wz_enc;
 
@@ -74,8 +74,8 @@ begin
     
     --o_diff
     with hit select
-        o_diff <=   sub_addr_wz (3 downto 0) when '1',
-                    "0000" when '0',
-                    "XXXX" when others;
+        o_diff <=   sub_addr_wz (1 downto 0) when '1',
+                    "00" when '0',
+                    "XX" when others;
 
 end Behavioral;
