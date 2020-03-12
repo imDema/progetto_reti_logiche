@@ -42,15 +42,15 @@ end counter;
 
 architecture Behavioral of counter is
 
-type S is (Swait,S0,S1,S2,S3,S4,S5,S6,S7,S8);
+type S is (S0,S1,S2,S3,S4,S5,S6,S7,S8);
 signal cur_state, next_state : S;
 
 begin
     process(i_clk,i_rst)
     begin
         if i_rst = '1' then
-            cur_state <= Swait;
-        elsif rising_edge(i_clk) then
+            cur_state <= S0;
+        elsif falling_edge(i_clk) then
             cur_state <= next_state;
         end if; 
     end process;
@@ -59,10 +59,10 @@ begin
     begin
         next_state <= cur_state;
         case cur_state is
-            when Swait => if i_en = '1' then
-                    next_state <= S0;
+            when S0 => if i_en = '1' then
+                    next_state <= S1;
                 end if;
-            when S0 => next_state <= S1;
+            --when S0 => next_state <= S1;
             when S1 => next_state <= S2;
             when S2 => next_state <= S3;
             when S3 => next_state <= S4;
@@ -80,9 +80,9 @@ begin
         o_one_hot <= "00000000";
         o_done <= '0';
         case cur_state is
-            when Swait =>
-                o_base2 <= "000";
-                o_one_hot <= "00000000";
+            --when Swait =>
+                --o_base2 <= "000";
+                --o_one_hot <= "00000000";
             when S0 =>
                 o_base2 <= "000";
                 o_one_hot <= "00000001";

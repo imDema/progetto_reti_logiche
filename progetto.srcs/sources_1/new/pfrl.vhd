@@ -95,7 +95,7 @@ begin
     begin
         if(i_rst = '1') then
             cur_state <= S0;
-        elsif rising_edge(i_clk) then
+        elsif falling_edge(i_clk) then
             cur_state <= next_state;
         end if;
     end process;
