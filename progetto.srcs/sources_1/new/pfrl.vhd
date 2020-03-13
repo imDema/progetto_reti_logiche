@@ -117,11 +117,7 @@ begin
             when S3 =>
                 next_state <= S4;
             when S4 =>
-               if i_start = '1' then
-                    next_state <= S2;
-                else
                     next_state <= S5;
-                end if;
             when S5 =>
                 if i_start = '1' then
                     next_state <= S2;
