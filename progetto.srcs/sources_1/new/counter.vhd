@@ -48,10 +48,12 @@ signal cur_state, next_state : S;
 begin
     process(i_clk,i_rst)
     begin
-        if i_rst = '1' then
-            cur_state <= S0;
-        elsif falling_edge(i_clk) then
-            cur_state <= next_state;
+        if falling_edge(i_clk) then
+            if i_rst = '1' then
+                cur_state <= S0;
+            else
+                cur_state <= next_state;
+            end if;
         end if; 
     end process;
     

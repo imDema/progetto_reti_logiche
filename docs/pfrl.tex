@@ -22,14 +22,15 @@
 % \begin{multicols*}{2}
     
 \section{Introduzione}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ante urna, aliquam quis elit eget, iaculis condimentum quam. Sed et fermentum ex. Donec elementum porttitor nisi et blandit. Mauris vel augue eget massa molestie ornare. Praesent rhoncus lacus eu mi lacinia, nec faucibus justo dapibus. Fusce sit amet massa sed massa euismod bibendum. Duis nec elementum nisi, et imperdiet odio. Mauris mattis magna vel purus elementum, eu tristique lacus placerat. Mauris rutrum interdum efficitur. Etiam ut dolor commodo, dapibus nibh sed, sodales tortor. Suspendisse lacus ipsum, faucibus a mi eu, lobortis venenatis justo.
+
 \section{Architettura}
-Donec pharetra lorem id erat iaculis vulputate. Curabitur pellentesque sit amet leo nec cursus. Ut sit amet pellentesque massa, ut fringilla orci. Etiam tempus vel ex molestie mattis. Pellentesque pulvinar interdum lectus aliquet bibendum. Maecenas consequat a urna in lobortis. Vivamus purus odio, laoreet iaculis eleifend quis, eleifend sodales mi. Nam congue luctus justo eu sagittis. Vivamus finibus massa in arcu convallis rutrum. Proin semper, metus id feugiat ullamcorper, tellus odio efficitur nisi, ac rutrum dolor eros in arcu. Donec iaculis turpis lacinia ex tincidunt, a fringilla dolor eleifend. Pellentesque id lectus commodo, interdum purus consectetur, pretium dui. Etiam vitae fermentum est, a imperdiet urna. Mauris ut urna odio.
+Al livello più alto il componente presenta un registro di cache dell'indirizzo in output e i process che descrivono il comportamento di una macchina a stati finiti.
+La macchina ha 6 stati ed è implementata con dei registri che commutano sul fronte di discesa del clock e ha come ingresso il segnale \texttt{o_enc_rdy}, segnale che il modulo interno porta a \texttt{1} quando l'encoder è pronto a codificare un indirizzo. 
 \section{Risultati sperimentali}
-Sed consectetur ipsum imperdiet est eleifend hendrerit. Morbi tempor lectus sit amet lorem aliquam, eget ornare orci pulvinar. Aenean ullamcorper arcu vel fringilla dignissim. Donec vel felis faucibus, sollicitudin urna a, consectetur eros. Maecenas varius eu felis in varius. Integer a elementum sapien. Sed in sagittis lectus. Mauris nulla nunc, pulvinar eget dui ac, tincidunt aliquet mauris.
+
 \section{Simulazioni}
-Vestibulum ex massa, volutpat in rhoncus eget, tempus vel nisi. Vivamus maximus enim id dolor maximus, ac gravida dolor efficitur. Duis viverra placerat lectus et sodales. Aenean scelerisque mattis efficitur. Morbi accumsan tempor dictum. Sed vitae eros cursus, posuere libero ac, sagittis ex. Curabitur vitae magna vel sapien sollicitudin aliquam id in velit. Aenean a porta lacus. Morbi eu risus aliquet, imperdiet erat nec, dapibus leo. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+
 \section{Conclusioni}
-Curabitur imperdiet erat et est viverra, ut vehicula ligula volutpat. Nulla blandit malesuada urna quis gravida. Donec elementum convallis sapien eget volutpat. Sed rhoncus ullamcorper arcu vel pulvinar. Vestibulum purus magna, tempus sed mauris a, maximus dictum mi. Quisque porta quis leo sit amet tristique. Nulla elementum venenatis nisl id sollicitudin. Sed accumsan lectus vitae lorem feugiat, vel viverra ante interdum. Fusce eleifend vel felis ultricies consequat. 
+
 % \end{multicols*}
 \end{document}

@@ -47,7 +47,7 @@ end datapath;
 
 architecture Behavioral of datapath is
 component wz_enc is 
-    Port ( i_addr : in STD_LOGIC_VECTOR (7 downto 0);
+    Port ( i_addr : in STD_LOGIC_VECTOR (6 downto 0);
            i_load_wz : in STD_LOGIC;
            o_hit : out STD_LOGIC;
            o_diff : out STD_LOGIC_VECTOR (1 downto 0);
@@ -86,7 +86,7 @@ begin
     -- TODO Replace with `for I in 7 downto 0 generate`
     GEN_WZ: for I in 0 to 7 generate
         WZX: wz_enc port map (
-            i_addr => i_data,
+            i_addr => i_data (6 downto 0),
             i_load_wz => counter_one_hot(I),
             o_hit => wz_hit_one_hot(I),
             o_diff => offs(I),
@@ -94,7 +94,7 @@ begin
         );
     end generate;
     
-    --offs_and
+    --offs_or
     offs_or <= (offs(0) or offs(1) or offs(2) or offs(3) or offs(4) or offs(5) or offs(6) or offs(7));
     
     --offs_one_hot

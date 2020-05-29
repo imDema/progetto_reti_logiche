@@ -93,10 +93,12 @@ begin
     
     process(i_clk, i_rst)
     begin
-        if(i_rst = '1') then
-            cur_state <= S0;
-        elsif falling_edge(i_clk) then
-            cur_state <= next_state;
+        if falling_edge(i_clk) then
+            if(i_rst = '1') then
+                cur_state <= S0;
+            else
+                cur_state <= next_state;
+            end if;
         end if;
     end process;
     
@@ -117,7 +119,11 @@ begin
             when S3 =>
                 next_state <= S4;
             when S4 =>
+                if i_start = '1' then
+                    next_state <= S4;
+                else 
                     next_state <= S5;
+                end if;
             when S5 =>
                 if i_start = '1' then
                     next_state <= S2;

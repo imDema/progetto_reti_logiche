@@ -33,7 +33,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --use UNISIM.VComponents.all;
 
 entity wz_enc is
-    Port ( i_addr : in STD_LOGIC_VECTOR (7 downto 0);
+    Port ( i_addr : in STD_LOGIC_VECTOR (6 downto 0);
            i_load_wz : in STD_LOGIC;
            o_hit : out STD_LOGIC;
            o_diff : out STD_LOGIC_VECTOR (1 downto 0);
@@ -42,9 +42,9 @@ end wz_enc;
 
 architecture Behavioral of wz_enc is
 
-signal o_r_wz : STD_LOGIC_VECTOR (7 downto 0);
+signal o_r_wz : STD_LOGIC_VECTOR (6 downto 0);
 signal lt_wz_addr : STD_LOGIC;
-signal sub_addr_wz : STD_LOGIC_VECTOR (7 downto 0); --TODO check if using only 4 bits is problematic
+signal sub_addr_wz : STD_LOGIC_VECTOR (6 downto 0); --TODO check if using only 4 bits is problematic
 signal lt_sub_100 : STD_LOGIC;
 signal hit : STD_LOGIC;
 
@@ -60,16 +60,18 @@ begin
     end process;
     
     -- lt_wz_addr
-    lt_wz_addr <= '1' when (o_r_wz <= i_addr) else '0';
+    -- lt_wz_addr <= '1' when (o_r_wz <= i_addr) else '0';
     
     -- sub_addr_wz
-    sub_addr_wz <= i_addr(7 downto 0) - o_r_wz(7 downto 0);
+    sub_addr_wz <= i_addr(6 downto 0) - o_r_wz(6 downto 0);
     
     -- lt_sub_100
-    lt_sub_100 <= '1' when (sub_addr_wz < "0100") else '0';
+    -- lt_sub_100 <= '1' when (sub_addr_wz < "0100") else '0';
     
     -- o_hit
-    hit <= (lt_wz_addr and lt_sub_100);
+    --hit <= (lt_wz_addr and lt_sub_100);
+    hit <=  '1' when sub_addr_wz (6 downto 2) = "00000000" else '0';
+                
     o_hit <= hit;
     
     --o_diff

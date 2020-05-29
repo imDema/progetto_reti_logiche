@@ -10,15 +10,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="3745001fs"></ZoomEndTime>
-      <Cursor1Time time="1600000fs"></Cursor1Time>
+      <ZoomStartTime time="1000fs"></ZoomStartTime>
+      <ZoomEndTime time="1961001fs"></ZoomEndTime>
+      <Cursor1Time time="1250000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="122"></ValueColumnWidth>
+      <ValueColumnWidth column_width="118"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="26" />
+   <WVObjectSize size="25" />
    <wvobject fp_name="/project_tb/tb_clk" type="logic">
       <obj_property name="ElementShortName">tb_clk</obj_property>
       <obj_property name="ObjectShortName">tb_clk</obj_property>
@@ -96,10 +96,6 @@
    <wvobject fp_name="/project_tb/UUT/DATAPATH0/o_enc_rdy" type="logic">
       <obj_property name="ElementShortName">o_enc_rdy</obj_property>
       <obj_property name="ObjectShortName">o_enc_rdy</obj_property>
-   </wvobject>
-   <wvobject fp_name="/project_tb/UUT/cur_state" type="other">
-      <obj_property name="ElementShortName">cur_state</obj_property>
-      <obj_property name="ObjectShortName">cur_state</obj_property>
    </wvobject>
    <wvobject fp_name="/project_tb/UUT/i_r_cache" type="array">
       <obj_property name="ElementShortName">i_r_cache[7:0]</obj_property>
