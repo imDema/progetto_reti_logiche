@@ -5,3 +5,5 @@ progetto.runs/
 *.log
 *.out
 *.synctex.gz
+docs/pfrl.fdb_latexmk
+docs/pfrl.fls
