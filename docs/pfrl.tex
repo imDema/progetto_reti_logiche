@@ -13,11 +13,16 @@
 \usepackage[activate=true,final,tracking=true,kerning=true,spacing=true]{microtype}
 \microtypecontext{spacing=nonfrench}
 
+
 \begin{document}
 
 \setlength\parindent{0pt}
 % \hyphenpenalty=1500
 \emergencystretch 3em
+
+\begin{figure}[t]
+  \includegraphics[height=3cm]{logoPoli.pdf}
+\end{figure}
 
 \maketitle
 
@@ -31,10 +36,10 @@ Se l'indirizzo da codificare non fa parte di nessuna working zone il primo bit v
 
 Per un indirizzo che fa parte di una working zone il risultato è composto da tre parti: il primo bit messo a `1' a indicare che l'indirizzo fa parte di una working zone, i successivi 3 bit contengono il numero della working zone in cui rientra l'indirizzo espresso in codifica binaria (da 000 a 111), mentre gli ultimi 4 bit contengono l'offset dell'indirizzo rispetto all'inizio (o base) della working zone espresso in codifica one-hot (da 0001 a 1000)
 
-A seguire è riportata una tabella con degli esempi di codifica, dove l'indirizzo codificato è separato a indicare le diverse parti del risultato.
+In tabella \ref{tab:example} sono riportati degli esempi di codifica, dove l'indirizzo codificato è separato a indicare le diverse parti del risultato.
 
 \begin{table}[H]
-  
+  \centering
   \ttfamily
   \begin{tabular} {|c|c|c|}
     \hline
@@ -62,19 +67,21 @@ A seguire è riportata una tabella con degli esempi di codifica, dove l'indirizz
     \hline
     ...          & \cellcolor[HTML]{E0E0E0}wz3 & ...                  \\
     \hline
-    
   \end{tabular}
   
   wz2 = 0000111, wz3 = 0001110
   \caption{Esempio di codifica}
+  \label{tab:example}
 \end{table}
 
+\pagebreak
 \section{Architettura}
 Al livello più alto il componente presenta un modulo \texttt{project\_reti\_logiche} che contiene tutti i moduli interni, un'automa a stati finiti e un registro di cache dell'indirizzo in output.
 
 \begin{figure}[H]
   \includegraphics[width=12cm]{schema-main.pdf}
   \caption{Schema modulo principale}
+  \label{fig:schema}
 \end{figure}
 
 L'automa a stati finiti è implementato con una collezione di process:
@@ -89,32 +96,37 @@ Infine un ultimo process aggiorna i valori dei segnali in input ai moduli intern
   \centering
   \includegraphics[width=12.5cm]{schema-fsa.pdf}
   \caption{Automa a stati finiti}
+  \label{fig:fsa}
 \end{figure}
 
-L'FSA ha 6 stati ed è caratterizzato da due zone di funzionamento, la prima zona è quella iniziale di setup costituita dagli stati `S0' e `S1': una volta ricevuto il segnale di \texttt{i\_start} il componente si prepara alla codifica rimanendo nello stato `S1' mentre sta caricando gli indirizzi delle working zones nei suoi registri interni.
+L'FSA ha 6 stati ed è caratterizzato da due zone di funzionamento, la prima zona è quella iniziale di setup costituita dagli stati `INIT' e `LOAD\_WZ': una volta ricevuto il segnale di \texttt{i\_start} il componente si prepara alla codifica rimanendo nello stato `LOAD\_WZ' mentre sta caricando gli indirizzi delle working zones nei suoi registri interni.
 
-La fine di questa fase è segnalata dal segnale \texttt{o\_enc\_rdy} proveniente dai componenti interni che viene alzato a `1' quando è pronto a codificare, avanzando così l'automa al prossimo stato `S2' e iniziando la fase di codifica.
+La fine di questa fase è segnalata dal segnale \texttt{o\_enc\_rdy} proveniente dai componenti interni che viene alzato a `1' quando è pronto a codificare, avanzando così l'automa al prossimo stato `ENCODE' e iniziando la fase di codifica.
 
-La fase di codifica iniza nello stato `S2' dove il componente legge l'indirizzo da codificare, lo codifica e lo carica nel registro di cache in un unico ciclo di clock. Nello stato seguente viene scritto in RAM il risultato e in quello dopo viene alzato il segnale di \texttt{o\_done} segnando la fine della codifica.
+La fase di codifica iniza nello stato `ENCODE' dove il componente legge l'indirizzo da codificare, lo codifica e lo carica nel registro di cache in un unico ciclo di clock. Nello stato seguente, `SAVE', viene scritto in RAM il risultato e in quello dopo, `DONE', viene alzato il segnale di \texttt{o\_done} segnando la fine della codifica.
 
-Dopo di che il componente attenderà l'abbassarsi del segnale di \texttt{i\_start} per abbassare \texttt{o\_done} e poi mettersi in attesa di un nuovo segnale di start nello stato `S5', pronto per una nuova codifica.
+Dopo di che il componente attenderà l'abbassarsi del segnale di \texttt{i\_start} per abbassare \texttt{o\_done} e poi mettersi in attesa di un nuovo segnale di start nello stato `WAIT\_START', pronto per una nuova codifica.
 
+\pagebreak
 \subsection{Moduli interni}
+
+\begin{wrapfigure}[14cm]{R}{3.5cm}
+  \centering
+  \includegraphics[width=3.5cm]{schema-wz_enc.pdf}
+  \caption{Schema di \texttt{wz\_enc}}
+  \label{fig:wz_enc}
+\end{wrapfigure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=10cm]{schema-components.pdf}
   \caption{Moduli interni}
+  \label{fig:modules}
 \end{figure}
 
 Il componente contiene un modulo \texttt{datapath} che ha al suo interno un modulo \texttt{counter} e 8 moduli \texttt{wz\_enc} identici (uno per ogni indirizzo della working zone).
 
 \subsubsection{wz\_enc}
-
-\begin{wrapfigure}[8cm]{R}{3.5cm}
-  \includegraphics[width=3.5cm]{schema-wz_enc.pdf}
-  \caption{Schema di \texttt{wz\_enc}}
-\end{wrapfigure}
 
 I moduli \texttt{wz\_enc} si occupano di stabilire se un indirizzo sia all'interno di una determinata working zone, segnalandolo con \texttt{o\_hit}, e di calcolarne l'offset in caso positivo. L'offest rispetto alla working zone è \texttt{o\_diff} che è da considerarsi valido solo se \texttt{o\_hit} è a `1', altrimenti avrà tutti i bit a `0'
 
@@ -125,8 +137,10 @@ Il modulo \texttt{counter} è un contatore da 0 a 7 che scatta sul falling edge.
 \subsubsection{datapath}
 
 \begin{figure}[H]
+  \centering
   \includegraphics[width=\linewidth]{schema-datapath.pdf}
   \caption{Schema di \texttt{datapath}}
+  \label{fig:datapath}
 \end{figure}
 
 Il \texttt{datapath} divide il bus contenente la codifica one hot in uscita dal \texttt{counter} collegando ogni bit del segnale al segnale di load di un \texttt{wz\_enc}, in questo modo, usando il segnale in codifica binaria per l'indirizzo in uscita permette di caricare l'indirizzo delle working zone nei rispettivi registri. 
@@ -208,11 +222,20 @@ Infine il power report stima un Total On-Chip Power di $0.131\mathrm{W}$
 
 Il componente è stato testato con simulazioni comportamentali pre sintesi e simulazioni funzionali post sintesi e post implementazione:
 
-Visto che la correttezza della codifica fa affidamento sul fatto che solo un \texttt{wz\_enc} possa avere un \texttt{o\_diff} diverso da `0' nello stesso momento, nelle test bench sono state provate le configurazioni di working zones e indirizzo da codificare più critiche, cioè quelle con working zones adiacenti o con indirizzi di base a distanza 5 dove l'indirizzo da codificare si trova tra le due.
+Nelle test bench è stata testata la rubustezza del design con reset asincroni, codifiche in sequenza con indirizzi diversi e working zones cambiate dopo un reset
 
-Inoltre è stata testata l'indipendenza da ordinamento delle working zones, la correttezza di codifiche successive al cambiare dell'indirizzo da codificare e dopo un reset e un cambio di working zones.
+A seguire in figura \ref{fig:wave} è riportata la vista dei segnali durante una simulazione significativa dove, dopo aver ricevuto un reset asincrono in fase di lettura delle working zones, vengono codificati correttamente tre indirizzi in sequenza di cui due fanno parte di una working zone e uno no.
 
-Durante i test non sono stati riscontrati comportamenti imprevisti nei segnali e la sequenza degli stati dell'FSA è stata quella attesa, con il numero di iterazioni previste.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{waveview.png}
+  {
+    \small
+    Working zones: \texttt{[16,2D,5B,1F,0D,25,04,4D]}, Indirizzi: \texttt{[21,2A,5E]}
+  }
+  \caption{Wave view durante una simulazione}
+  \label{fig:wave}
+\end{figure}
 
 \section{Conclusioni}
 

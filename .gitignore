@@ -4,3 +4,4 @@ progetto.runs/
 *.aux
 *.log
 *.out
+*.synctex.gz

@@ -1,13 +1,7 @@
-
--- I path da cambiare sono alle righe 68, 93, 94 -
-
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.NUMERIC_STD.ALL;
-use ieee.std_logic_textio.ALL;
-use STD.textio.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 entity project_tb is
 end project_tb;
@@ -22,12 +16,23 @@ signal   tb_clk		        : std_logic := '0';
 signal   mem_o_data,mem_i_data	: std_logic_vector (7 downto 0);
 signal   enable_wire  		: std_logic;
 signal   mem_we		        : std_logic;
+signal   load_second          : STD_LOGIC := '0';
+signal   load_third          : STD_LOGIC := '0';
 
 type ram_type is array (65535 downto 0) of std_logic_vector(7 downto 0);
 
-signal RAM : ram_type;
-signal s_read_done : boolean := false;
-signal s_read : boolean := false;
+-- come da esempio su specifica
+signal RAM: ram_type := (
+            0 => std_logic_vector(to_unsigned( 22 , 8)),
+            1 => std_logic_vector(to_unsigned( 45 , 8)),
+            2 => std_logic_vector(to_unsigned( 91 , 8)),
+            3 => std_logic_vector(to_unsigned( 31 , 8)),
+            4 => std_logic_vector(to_unsigned( 13 , 8)),
+            5 => std_logic_vector(to_unsigned( 37 , 8)),
+            6 => std_logic_vector(to_unsigned( 4 , 8)),
+            7 => std_logic_vector(to_unsigned( 77 , 8)),
+            8 => std_logic_vector(to_unsigned( 33 , 8)),
+            others => (others =>'0'));
 
 component project_reti_logiche is
 port (
@@ -64,20 +69,16 @@ begin
     tb_clk <= not tb_clk;
 end process p_CLK_GEN;
 
+
 MEM : process(tb_clk)
-    file read_file : text open read_mode is "C:\Users\Dema\Documents\dev\xilinx\Auto_300k\ram_content.txt"; --<<<<<<<<<<<<<<<<--------------------------------- QUI DA CAMBIARE
-    variable read_line : line;
-    variable R : ram_type;
-    variable handler : integer;
 begin
     if tb_clk'event and tb_clk = '1' then
-        if s_read then
-            for i in 0 to 10 loop
-                readline(read_file, read_line);
-                read(read_line, handler);
-                RAM(i) <= std_logic_vector(to_unsigned( handler , 8));
-            end loop;
-                if endfile(read_file) then s_read_done <= true; end if;
+        if load_second = '1' then 
+            RAM(8) <= std_logic_vector(to_unsigned( 42 , 8));
+            RAM(9) <= std_logic_vector(to_unsigned( 0 , 8));
+        elsif load_third = '1' then 
+            RAM(8) <= std_logic_vector(to_unsigned( 94 , 8));
+            RAM(9) <= std_logic_vector(to_unsigned( 0 , 8));
         elsif enable_wire = '1' then
             if mem_we = '1' then
                 RAM(conv_integer(mem_address))  <= mem_i_data;
@@ -89,106 +90,53 @@ begin
     end if;
 end process;
 
+
 test : process is
-  file write_file : text open write_mode is "C:\Users\Dema\Documents\dev\xilinx\Auto_300k\passati.txt"; --<<<<<<<<<<<<<<<<--------------------------------- QUI DA CAMBIARE
-  file err_write_file : text open write_mode is "C:\Users\Dema\Documents\dev\xilinx\Auto_300k\non_passati.txt"; --<<<<<<<<<<<<<<<<--------------------------------- QUI DA CAMBIARE
-  variable write_line , err_write_line : line;
-  variable count : integer := 0;
-  variable errors : boolean := false;
 begin 
-wait for 100 ns;
-    loop
------------------------------------------------------- TEST SINGOLO START  ------------------------------------------------------ 
-    count := count + 1;
-    if (s_read_done) then exit; end if;
-    s_read <= true; -- richiesta di modifica valori ram
-    wait for c_CLOCK_PERIOD;
-    s_read <= false;
+    wait for 100 ns;
     wait for c_CLOCK_PERIOD;
     tb_rst <= '1';
     wait for c_CLOCK_PERIOD;
     tb_rst <= '0';
     wait for c_CLOCK_PERIOD;
     tb_start <= '1';
+    wait for 225 ns;
+    tb_rst <= '1';
     wait for c_CLOCK_PERIOD;
+    tb_rst <= '0';
     wait until tb_done = '1';
     wait for c_CLOCK_PERIOD;
     tb_start <= '0';
     wait until tb_done = '0';
+
+    -- Maschera di output = 1 - 011 - 0100
+    assert RAM(9) = std_logic_vector(to_unsigned( 180 , 8)) report "TEST FALLITO. Expected  180  found " & integer'image(to_integer(unsigned(RAM(19))))  severity failure;
+    
+    load_second <= '1';
     wait for c_CLOCK_PERIOD;
-    if(RAM(9) = RAM(10)) then
-        write(write_line, integer'image(count) & string'(") PASSATO")); --- passati.txt
-        writeline(write_file, write_line);
-    else
-        write(err_write_line, integer'image(count) & string'(") NON PASSATO con risultato ")& integer'image(to_integer(unsigned(RAM(9)))) & string'(" - Caso start singolo")); --- non_passati.txt
-        writeline(err_write_file, err_write_line);
-        errors := true;
-    end if;
------------------------------------------------------- TEST SECONDO START (cambia addr da cod, no wz) ------------------------------------------------------ 
-    wait for c_CLOCK_PERIOD;
-    count := count + 1;
-    if (s_read_done) then exit; end if;   
-    s_read <= true; -- richiesta di modifica valori ram
-    wait for c_CLOCK_PERIOD;
-    s_read <= false;
-    wait for c_CLOCK_PERIOD;
+    load_second <= '0';
     tb_start <= '1';
     wait for c_CLOCK_PERIOD;
     wait until tb_done = '1';
     wait for c_CLOCK_PERIOD;
     tb_start <= '0';
     wait until tb_done = '0';
+    
+    assert RAM(9) = std_logic_vector(to_unsigned( 42 , 8)) report "TEST FALLITO. Expected  42  found " & integer'image(to_integer(unsigned(RAM(19))))  severity failure;
+ 
+    load_third <= '1';
     wait for c_CLOCK_PERIOD;
-    if(RAM(9) = RAM(10)) then
-        write(write_line, integer'image(count) & string'(") PASSATO")); --- passati.txt
-        writeline(write_file, write_line);
-    else
-        write(err_write_line, integer'image(count) & string'(") NON PASSATO con risultato ")& integer'image(to_integer(unsigned(RAM(9)))) & string'(" - Secondo start, per riferimento primo start guardare test ") & integer'image(count-1)); --- non_passati.txt
-        writeline(err_write_file, err_write_line);
-        errors := true;
-    end if; 
------------------------------------------------------- TEST RESET ASINCRONO (dopo 4 clk) ------------------------------------------------------ 
-    count := count + 1;
-    if (s_read_done) then exit; end if;   
-    s_read <= true; -- richiesta di modifica valori ram
-    wait for c_CLOCK_PERIOD;
-    s_read <= false;
-    wait for c_CLOCK_PERIOD;
-    tb_rst <= '1';
-    wait for c_CLOCK_PERIOD;
-    tb_rst <= '0';
-    wait for c_CLOCK_PERIOD;
+    load_third <= '0';
     tb_start <= '1';
-    wait for c_CLOCK_PERIOD;
-    wait for c_CLOCK_PERIOD;
-    wait for c_CLOCK_PERIOD;
-    wait for c_CLOCK_PERIOD;
-    tb_rst <= '1';
-    wait for c_CLOCK_PERIOD;
-    tb_rst <= '0';
     wait for c_CLOCK_PERIOD;
     wait until tb_done = '1';
     wait for c_CLOCK_PERIOD;
     tb_start <= '0';
     wait until tb_done = '0';
-    wait for c_CLOCK_PERIOD;
-    if(RAM(9) = RAM(10)) then
-        write(write_line, integer'image(count) & string'(") PASSATO")); --- passati.txt
-        writeline(write_file, write_line);
-    else
-        write(err_write_line, integer'image(count) & string'(") NON PASSATO con risultato ")& integer'image(to_integer(unsigned(RAM(9)))) & string'(" - Test reset asincrono dopo 4 clk")); --- non_passati.txt
-        writeline(err_write_file, err_write_line);
-        errors := true;
-    end if;   
-    ---------- fine casi di test ---------- 
-    end loop;
-    if(not errors) then 
-        write(err_write_line, string'("Tutti i test sono stati passati"));
-        writeline(err_write_file, err_write_line);    
-    end if;  
-    file_close(write_file);
-    file_close(err_write_file);
-    std.env.finish;
+    
+    assert RAM(9) = std_logic_vector(to_unsigned( 168 , 8)) report "TEST FALLITO. Expected  10101000  found " & integer'image(to_integer(unsigned(RAM(19))))  severity failure;
+ 
+    assert false report "Simulation Ended!, TEST PASSATO" severity failure;
 end process test;
 
 end projecttb; 
