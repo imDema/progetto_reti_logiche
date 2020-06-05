@@ -32,9 +32,9 @@ Il componente realizzato implementa la codifica ``Working Zone'' per indirizzi d
 
 La codifica working zone consiste nell'esprimere un indirizzo in funzione della sua posizione relativa all'inizio di una working zone, se ne fa parte, altrimenti lasciarlo invariato.
 
-Se l'indirizzo da codificare non fa parte di nessuna working zone il primo bit viene messo a `0' e i restanti 7 bit sono quelli dell'indirizzo invariato.
+Se l'indirizzo da codificare non fa parte di nessuna working zone il primo bit viene messo a `0' e i restanti 7 bit sono quelli originali.
 
-Per un indirizzo che fa parte di una working zone il risultato è composto da tre parti: il primo bit messo a `1' a indicare che l'indirizzo fa parte di una working zone, i successivi 3 bit contengono il numero della working zone in cui rientra l'indirizzo espresso in codifica binaria (da 000 a 111), mentre gli ultimi 4 bit contengono l'offset dell'indirizzo rispetto all'inizio (o base) della working zone espresso in codifica one-hot (da 0001 a 1000)
+Altrimenti il risultato è composto da tre parti: il primo bit messo a `1' a indicare che l'indirizzo fa parte di una working zone, i successivi 3 bit contengono il numero della working zone di cui fa parte, espresso in codifica binaria (da 000 a 111), mentre gli ultimi 4 bit contengono l'offset dell'indirizzo rispetto all'inizio (o base) della working zone espresso in codifica one-hot (da 0001 a 1000)
 
 In tabella \ref{tab:example} sono riportati degli esempi di codifica, dove l'indirizzo codificato è separato a indicare le diverse parti del risultato.
 
@@ -110,7 +110,7 @@ Dopo di che il componente attenderà l'abbassarsi del segnale di \texttt{i\_star
 \pagebreak
 \subsection{Moduli interni}
 
-\begin{wrapfigure}[14cm]{R}{3.5cm}
+\begin{wrapfigure}[14]{R}{3.5cm}
   \centering
   \includegraphics[width=3.5cm]{schema-wz_enc.pdf}
   \caption{Schema di \texttt{wz\_enc}}
@@ -143,7 +143,7 @@ Il modulo \texttt{counter} è un contatore da 0 a 7 che scatta sul falling edge.
   \label{fig:datapath}
 \end{figure}
 
-Il \texttt{datapath} divide il bus contenente la codifica one hot in uscita dal \texttt{counter} collegando ogni bit del segnale al segnale di load di un \texttt{wz\_enc}, in questo modo, usando il segnale in codifica binaria per l'indirizzo in uscita permette di caricare l'indirizzo delle working zone nei rispettivi registri. 
+Il \texttt{datapath} divide il bus contenente la codifica one hot in uscita dal \texttt{counter} collegando ogni bit del segnale al segnale di load di un \texttt{wz\_enc}, in questo modo, usando il segnale in codifica binaria per l'indirizzo in uscita (\texttt{o\_address}) permette di caricare l'indirizzo delle working zone nei rispettivi registri. 
 
 Utilizzando l'output degli \texttt{o\_hit} dei \texttt{wz\_enc} il \texttt{datapath} può rilevare se un indirizzo faccia parte di una working zone o meno, poi combinando gli output degli \texttt{o\_diff} può calcolare la codifica completa dell'indirizzo.
 
@@ -159,7 +159,7 @@ Dal report di sintesi si può osservare che il design del componente utilizza in
     \hline
     \bf{Site Type}        & \bf{Used} & \bf{Util\%} \\
     \hline
-    Slice LUTs*           & 98        & 0.07        \\
+    Slice LUTs            & 98        & 0.07        \\
     \hline
     LUT as Logic          & 98        & 0.07        \\
     \hline
@@ -214,13 +214,13 @@ Il numero di nodi utilizzato scala linearmente con il numero di working zone e v
 
 Il timing report utilizzando un clock con periodo di $100\mathrm{ns}$ segnala Worst Negative Slack di $94.1\mathrm{ns}$, Worst Hold Slack di $0.154\mathrm{ns}$ e Worst Pulse Width Slack di $49.5\mathrm{ns}$.
 
-Quindi anche per quanto riguarda il timing il componente rispetta con ampi margini la specifica del progetto e rispetterebbe i constraints di timing anche con un clock 10 volte più veloce
+Quindi anche per quanto riguarda il timing il componente rispetta con ampi margini la specifica del progetto e rispetterebbe i constraints di timing anche con un clock 10 volte più veloce.
 
 Infine il power report stima un Total On-Chip Power di $0.131\mathrm{W}$
 
 \section{Simulazioni}
 
-Il componente è stato testato con simulazioni comportamentali pre sintesi e simulazioni funzionali post sintesi e post implementazione:
+Il componente è stato testato con simulazioni comportamentali pre sintesi, simulazioni functional e timing post sintesi e functional post implementazione:
 
 Nelle test bench è stata testata la rubustezza del design con reset asincroni, codifiche in sequenza con indirizzi diversi e working zones cambiate dopo un reset
 
